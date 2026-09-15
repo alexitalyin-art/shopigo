@@ -1,3 +1,4 @@
+import CategoryCard from "@/components/ui/CategoryCard";
 import Header from "@/components/Header";
 import Button from "@/components/ui/Button";
 import ProductCard from "@/components/ui/ProductCard";
@@ -28,6 +29,42 @@ export default function Home() {
         <div className="mt-10">
           <Button>Shop Now</Button>
         </div>
+      </section>
+      {/* Shop by Category */}
+      <section className="border-t border-gray-200 bg-white">
+  <div className="mx-auto max-w-7xl px-6 py-20">
+    <div className="mb-10">
+      <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
+        Explore
+      </p>
+
+      <h2 className="mt-2 text-3xl font-bold">
+        Shop by Category
+      </h2>
+    </div>
+
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <CategoryCard
+        name="Men"
+        description="Everyday essentials"
+      />
+
+      <CategoryCard
+        name="Jackets"
+        description="Stay warm in style"
+      />
+
+      <CategoryCard
+        name="Casual Wear"
+        description="Comfort meets style"
+      />
+
+      <CategoryCard
+        name="New Arrivals"
+        description="Fresh styles"
+      />
+    </div>
+  </div>
       </section>
 
       {/* Featured Products */}
