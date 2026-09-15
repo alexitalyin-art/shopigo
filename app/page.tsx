@@ -1,4 +1,6 @@
 import Header from "@/components/Header";
+import Button from "@/components/ui/Button";
+import ProductCard from "@/components/ui/ProductCard";
 
 export default function Home() {
   return (
@@ -23,9 +25,9 @@ export default function Home() {
           Discover products you love at prices you'll love.
         </p>
 
-        <button className="mt-10 rounded-full bg-black px-8 py-4 text-sm font-semibold text-white transition hover:bg-gray-800">
-          Shop Now
-        </button>
+        <div className="mt-10">
+          <Button>Shop Now</Button>
+        </div>
       </section>
 
       {/* Featured Products */}
@@ -48,24 +50,11 @@ export default function Home() {
               "Casual Wear",
               "New Arrivals",
             ].map((product) => (
-              <div
+              <ProductCard
                 key={product}
-                className="rounded-2xl border border-gray-200 bg-white p-6"
-              >
-                <div className="flex aspect-square items-center justify-center rounded-xl bg-gray-100">
-                  <span className="text-sm text-gray-400">
-                    Product Image
-                  </span>
-                </div>
-
-                <h3 className="mt-5 font-semibold">
-                  {product}
-                </h3>
-
-                <p className="mt-2 text-sm text-gray-500">
-                  Coming soon
-                </p>
-              </div>
+                name={product}
+                price="Coming soon"
+              />
             ))}
           </div>
         </div>
