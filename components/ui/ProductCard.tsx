@@ -2,14 +2,16 @@ type ProductCardProps = {
   name: string;
   price?: string;
   image?: string;
+  href?: string;
 };
 
 export default function ProductCard({
   name,
   price,
   image,
+  href,
 }: ProductCardProps) {
-  return (
+  const card = (
     <article className="group cursor-pointer rounded-2xl bg-white p-3 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
       {/* Product Image */}
       <div className="flex aspect-square items-center justify-center overflow-hidden rounded-xl bg-gray-100">
@@ -40,4 +42,14 @@ export default function ProductCard({
       </div>
     </article>
   );
+
+  if (href) {
+    return (
+      <a href={href} className="block">
+        {card}
+      </a>
+    );
+  }
+
+  return card;
 }

@@ -5,6 +5,7 @@ const products = [
   {
     name: "Men's Jeans",
     price: "₹999",
+    href: "/shop/mens-jeans",
   },
   {
     name: "Winter Jacket",
@@ -65,6 +66,7 @@ export default function ShopPage() {
                 key={product.name}
                 name={product.name}
                 price={product.price}
+                href={product.href}
               />
             ))}
           </div>
