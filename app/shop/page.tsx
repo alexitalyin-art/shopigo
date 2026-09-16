@@ -1,43 +1,15 @@
 import Header from "@/components/Header";
 import ProductCard from "@/components/ui/ProductCard";
+import connectDB from "@/lib/mongodb";
+import Product from "@/models/Product";
 
-const products = [
-  {
-    name: "Men's Jeans",
-    price: "₹999",
-    href: "/shop/mens-jeans",
-  },
-  {
-    name: "Winter Jacket",
-    price: "₹1,499",
-  },
-  {
-    name: "Casual Shirt",
-    price: "₹799",
-  },
-  {
-    name: "Men's T-Shirt",
-    price: "₹499",
-  },
-  {
-    name: "Denim Jacket",
-    price: "₹1,299",
-  },
-  {
-    name: "Casual Pants",
-    price: "₹899",
-  },
-  {
-    name: "Hoodie",
-    price: "₹999",
-  },
-  {
-    name: "New Arrival",
-    price: "₹1,199",
-  },
-];
+export default async function ShopPage() {
+  await connectDB();
 
-export default function ShopPage() {
+  const products = await Product.find({ isActive: true })
+    .sort({ createdAt: -1 })
+    .lean();
+
   return (
     <main className="min-h-screen bg-white text-gray-900">
       <Header />
@@ -60,16 +32,28 @@ export default function ShopPage() {
       {/* Products */}
       <section className="border-t border-gray-200 bg-gray-50">
         <div className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard
-                key={product.name}
-                name={product.name}
-                price={product.price}
-                href={product.href}
-              />
-            ))}
-          </div>
+          {products.length === 0 ? (
+            <div className="py-20 text-center">
+              <h2 className="text-2xl font-semibold">
+                No products available
+              </h2>
+
+              <p className="mt-3 text-gray-500">
+                Products will appear here when they are added.
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {products.map((product) => (
+                <ProductCard
+                  key={product._id.toString()}
+                  name={product.name}
+                  price={`₹${product.price.toLocaleString("en-IN")}`}
+                  href={`/shop/${product.slug}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </main>
