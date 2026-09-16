@@ -1,10 +1,15 @@
+
 "use client";
 
 import { FormEvent, useState } from "react";
 
 export default function AdminProductsPage() {
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [message, setMessage] = useState("");
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -22,7 +27,9 @@ export default function AdminProductsPage() {
   });
 
   function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) {
     const { name, value, type } = e.target;
 
@@ -35,13 +42,89 @@ export default function AdminProductsPage() {
     }));
   }
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  function handleImageChange(
+    e: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = e.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setMessage("Please select a valid image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage("Image must be smaller than 5 MB.");
+      return;
+    }
+
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setMessage("");
+  }
+
+  async function uploadImage(): Promise<string | null> {
+    if (!imageFile) {
+      return null;
+    }
+
+    setUploadingImage(true);
+    setMessage("");
+
+    try {
+      const formData = new FormData();
+
+      formData.append("file", imageFile);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to upload image."
+        );
+      }
+
+      return data.image.secure_url;
+    } catch (error) {
+      console.error("IMAGE UPLOAD ERROR:", error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to upload image."
+      );
+
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  }
+
+  async function handleSubmit(
+    e: FormEvent<HTMLFormElement>
+  ) {
     e.preventDefault();
 
     setLoading(true);
     setMessage("");
 
     try {
+      // Upload image first
+      const imageUrl = await uploadImage();
+
+      if (imageFile && !imageUrl) {
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch("/api/products", {
         method: "POST",
         headers: {
@@ -55,6 +138,7 @@ export default function AdminProductsPage() {
           compareAtPrice: form.compareAtPrice
             ? Number(form.compareAtPrice)
             : undefined,
+          images: imageUrl ? [imageUrl] : [],
           category: form.category,
           sizes: form.sizes
             .split(",")
@@ -74,7 +158,9 @@ export default function AdminProductsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to create product.");
+        throw new Error(
+          data.message || "Failed to create product."
+        );
       }
 
       setMessage("Product added successfully!");
@@ -93,6 +179,9 @@ export default function AdminProductsPage() {
         isActive: true,
         isFeatured: false,
       });
+
+      setImageFile(null);
+      setImagePreview("");
     } catch (error) {
       console.error(error);
 
@@ -109,6 +198,7 @@ export default function AdminProductsPage() {
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900">
       <div className="mx-auto max-w-4xl px-6 py-12">
+
         <div className="mb-10">
           <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
             Shopigo Admin
@@ -128,6 +218,40 @@ export default function AdminProductsPage() {
           className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm md:p-8"
         >
           <div className="grid gap-6 md:grid-cols-2">
+
+            {/* Product Image */}
+            <div className="md:col-span-2">
+              <label className="mb-2 block text-sm font-semibold">
+                Product Image
+              </label>
+
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm"
+              />
+
+              <p className="mt-2 text-xs text-gray-500">
+                JPG, PNG, WEBP, etc. Maximum 5 MB.
+              </p>
+
+              {imagePreview && (
+                <div className="mt-5">
+                  <p className="mb-2 text-sm font-semibold">
+                    Preview
+                  </p>
+
+                  <div className="h-64 w-64 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+                    <img
+                      src={imagePreview}
+                      alt="Product preview"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Product Name */}
             <div className="md:col-span-2">
@@ -309,8 +433,8 @@ export default function AdminProductsPage() {
               </p>
             </div>
 
-            {/* Active */}
-            <div className="md:col-span-2 flex flex-col gap-4 border-t border-gray-200 pt-6 sm:flex-row">
+            {/* Active / Featured */}
+            <div className="flex flex-col gap-4 border-t border-gray-200 pt-6 md:col-span-2 sm:flex-row">
               <label className="flex items-center gap-3 text-sm font-medium">
                 <input
                   type="checkbox"
@@ -319,6 +443,7 @@ export default function AdminProductsPage() {
                   onChange={handleChange}
                   className="h-4 w-4"
                 />
+
                 Product is active
               </label>
 
@@ -330,6 +455,7 @@ export default function AdminProductsPage() {
                   onChange={handleChange}
                   className="h-4 w-4"
                 />
+
                 Featured product
               </label>
             </div>
@@ -346,10 +472,14 @@ export default function AdminProductsPage() {
           <div className="mt-8 border-t border-gray-200 pt-6">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || uploadingImage}
               className="rounded-full bg-black px-8 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading ? "Adding Product..." : "Add Product"}
+              {uploadingImage
+                ? "Uploading Image..."
+                : loading
+                  ? "Adding Product..."
+                  : "Add Product"}
             </button>
           </div>
         </form>
