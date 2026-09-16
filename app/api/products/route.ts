@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import connectDB from "@/lib/mongodb";
 import Product from "@/models/Product";
 
-// GET /api/products
-// Get all active products
 export async function GET() {
   try {
     await connectDB();
@@ -29,10 +28,20 @@ export async function GET() {
   }
 }
 
-// POST /api/products
-// Create a new product
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized.",
+        },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
 
     const body = await request.json();

@@ -1,7 +1,11 @@
 "use client";
 
+import AdminHeader from "@/components/admin/AdminHeader";
+
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
 
 type Product = {
   _id: string;
@@ -15,6 +19,7 @@ type Product = {
 };
 
 export default function AdminProductsPage() {
+  const { data: session } = useSession();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -88,6 +93,10 @@ export default function AdminProductsPage() {
 
   return (
     <main className="min-h-screen bg-gray-50 text-gray-900">
+      <AdminHeader
+      name={session?.user?.name}
+      email={session?.user?.email}
+      />
       <div className="mx-auto max-w-7xl px-6 py-12">
 
         {/* Header */}

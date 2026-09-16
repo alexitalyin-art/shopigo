@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
+import { auth } from "@/auth";
 import connectDB from "@/lib/mongodb";
 import Product from "@/models/Product";
 
 type RouteContext = {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 };
 
-// GET /api/products/:id
 export async function GET(
-  request: NextRequest,
-  context: RouteContext
+  _request: NextRequest,
+  { params }: RouteContext
 ) {
   try {
-    const { id } = await context.params;
+    const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
@@ -58,13 +56,24 @@ export async function GET(
   }
 }
 
-// PUT /api/products/:id
 export async function PUT(
   request: NextRequest,
-  context: RouteContext
+  { params }: RouteContext
 ) {
   try {
-    const { id } = await context.params;
+    const session = await auth();
+
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
@@ -80,14 +89,10 @@ export async function PUT(
 
     const body = await request.json();
 
-    const product = await Product.findByIdAndUpdate(
-      id,
-      body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const product = await Product.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true,
+    }).lean();
 
     if (!product) {
       return NextResponse.json(
@@ -117,13 +122,24 @@ export async function PUT(
   }
 }
 
-// DELETE /api/products/:id
 export async function DELETE(
-  request: NextRequest,
-  context: RouteContext
+  _request: NextRequest,
+  { params }: RouteContext
 ) {
   try {
-    const { id } = await context.params;
+    const session = await auth();
+
+    if (!session?.user || session.user.role !== "admin") {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Unauthorized.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json(
@@ -164,4 +180,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}   
+}
