@@ -305,12 +305,13 @@ export default function CartPage() {
                 </span>
               </div>
 
-              <button
-                type="button"
+              <Link
+                href="/checkout"
                 className="mt-6 w-full rounded-full bg-black px-6 py-3 text-sm font-semibold text-white hover:bg-gray-800"
               >
                 Proceed to Checkout
-              </button>
+
+              </Link>
 
               <Link
                 href="/shop"
@@ -324,4 +325,4 @@ export default function CartPage() {
       </section>
     </main>
   );
-}
+} 
