@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
-import Button from "@/components/ui/Button";
+import AddToCartButton from "@/components/cart/AddToCartButton";
 import connectDB from "@/lib/mongodb";
 import Product from "@/models/Product";
 
@@ -51,14 +51,17 @@ export default async function ProductPage({
           {/* Product Information */}
           <div className="flex flex-col justify-center">
 
+            {/* Category */}
             <p className="text-sm font-semibold uppercase tracking-wider text-gray-500">
               {product.category}
             </p>
 
+            {/* Product Name */}
             <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-5xl">
               {product.name}
             </h1>
 
+            {/* Price */}
             <div className="mt-6 flex items-center gap-3">
               <p className="text-2xl font-semibold">
                 ₹{product.price.toLocaleString("en-IN")}
@@ -71,80 +74,51 @@ export default async function ProductPage({
               )}
             </div>
 
+            {/* Description */}
             <p className="mt-6 max-w-xl leading-7 text-gray-600">
               {product.description}
             </p>
 
-            {/* Sizes */}
-            {product.sizes.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-sm font-semibold">
-                  Select Size
-                </h2>
-
-                <div className="mt-3 flex flex-wrap gap-3">
-                  {product.sizes.map((size) => (
-                    <button
-                      key={size}
-                      type="button"
-                      className="rounded-lg border border-gray-300 px-6 py-3 text-sm font-medium transition hover:border-black hover:bg-black hover:text-white"
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Colors */}
-            {product.colors.length > 0 && (
-              <div className="mt-8">
-                <h2 className="text-sm font-semibold">
-                  Color
-                </h2>
-
-                <div className="mt-3 flex flex-wrap gap-3">
-                  {product.colors.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className="rounded-lg border border-gray-300 px-5 py-3 text-sm font-medium transition hover:border-black hover:bg-black hover:text-white"
-                    >
-                      {color}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Stock */}
+            {/* Stock Status */}
             <div className="mt-8">
-              {product.stock > 0 ? (
-                <p className="text-sm font-medium text-green-600">
-                  In Stock ({product.stock} available)
-                </p>
-              ) : (
+              {product.stock <= 0 ? (
                 <p className="text-sm font-medium text-red-600">
                   Out of Stock
+                </p>
+              ) : product.stock <= 5 ? (
+                <p className="text-sm font-medium text-orange-600">
+                  Only a few left in stock
+                </p>
+              ) : (
+                <p className="text-sm font-medium text-green-600">
+                  In Stock
                 </p>
               )}
             </div>
 
-            {/* Actions */}
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Button>
-                Add to Cart
-              </Button>
-
-              <Button variant="secondary">
-                Buy Now
-              </Button>
+            {/* Product Actions */}
+            <div className="mt-8">
+              <AddToCartButton
+                productId={product._id.toString()}
+                name={product.name}
+                slug={product.slug}
+                price={product.price}
+                image={
+                  product.images && product.images.length > 0
+                    ? product.images[0]
+                    : undefined
+                }
+                stock={product.stock}
+                sizes={product.sizes}
+                colors={product.colors}
+              />
             </div>
 
             {/* Product Details */}
             <div className="mt-10 border-t border-gray-200 pt-6">
               <div className="space-y-4 text-sm">
 
+                {/* Category */}
                 <div className="flex justify-between border-b border-gray-100 pb-4">
                   <span className="text-gray-500">
                     Category
@@ -155,6 +129,7 @@ export default async function ProductPage({
                   </span>
                 </div>
 
+                {/* SKU */}
                 {product.sku && (
                   <div className="flex justify-between border-b border-gray-100 pb-4">
                     <span className="text-gray-500">
@@ -167,15 +142,18 @@ export default async function ProductPage({
                   </div>
                 )}
 
+                {/* Availability */}
                 <div className="flex justify-between">
                   <span className="text-gray-500">
                     Availability
                   </span>
 
                   <span className="font-medium">
-                    {product.stock > 0
-                      ? "In Stock"
-                      : "Out of Stock"}
+                    {product.stock <= 0
+                      ? "Out of Stock"
+                      : product.stock <= 5
+                        ? "Only a few left"
+                        : "In Stock"}
                   </span>
                 </div>
 

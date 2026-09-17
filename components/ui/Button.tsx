@@ -3,6 +3,7 @@ type ButtonProps = {
   type?: "button" | "submit" | "reset";
   variant?: "primary" | "secondary";
   onClick?: () => void;
+  disabled?: boolean;
 };
 
 export default function Button({
@@ -10,6 +11,7 @@ export default function Button({
   type = "button",
   variant = "primary",
   onClick,
+  disabled = false,
 }: ButtonProps) {
   const baseStyles =
     "rounded-full px-8 py-3 text-sm font-semibold transition";
@@ -19,11 +21,15 @@ export default function Button({
       ? "bg-black text-white hover:bg-gray-800"
       : "border border-gray-300 bg-white text-gray-900 hover:bg-gray-100";
 
+  const disabledStyles =
+    "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-black";
+
   return (
     <button
       type={type}
       onClick={onClick}
-      className={`${baseStyles} ${variantStyles}`}
+      disabled={disabled}
+      className={`${baseStyles} ${variantStyles} ${disabledStyles}`}
     >
       {children}
     </button>
